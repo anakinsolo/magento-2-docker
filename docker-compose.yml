@@ -1,0 +1,60 @@
+version: '2.1'
+services:
+  mysql_magento:
+    image: 'mariadb:10.2'
+    environment: 
+      - MYSQL_ROOT_PASSWORD=tuan
+      - MYSQL_DATABASE=magento2
+      - MYSQL_USER=magento2
+      - MYSQL_PASSWORD=magento2
+    ports: 
+      - '3306'
+    volumes: 
+      - '.docker/mysql/:/var/lib/mysql'
+    healthcheck:
+      test: 'mysqladmin ping -h localhost'
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    networks:
+      magento:
+        aliases:
+          - mysql_magento
+  elasticsearch_magento:
+    image: 'magento/magento-cloud-docker-elasticsearch:7.5-1.2.2'
+    networks: 
+      magento:
+        aliases: 
+          - elasticsearch_magento
+  nginx_magento:
+    image: 'markoshust/magento-nginx:1.18-4'
+    ports: 
+      - '80:8000'
+      - '443:8443'
+    volumes: &appvolumes
+      - ./:/var/www/html:cached
+      - ./.docker/nginx/etc/nginx.conf:/etc/nginx/nginx.conf
+      - ./.docker/nginx/etc/conf.d/:/etc/nginx/conf.d/
+      - ./.docker/nginx/log/:/var/log/nginx/
+      - sockdata:/sock
+    networks: 
+      magento:
+        aliases: 
+          - nginx_magento
+  php_magento:
+    image: 'markoshust/magento-php:7.4-fpm'
+    volumes: *appvolumes
+    networks: 
+      magento:
+        aliases: 
+          - php_magento
+    depends_on: 
+      mysql_magento:
+        condition: service_healthy
+  
+networks: 
+  magento:
+    driver: bridge
+
+volumes: 
+  sockdata:
