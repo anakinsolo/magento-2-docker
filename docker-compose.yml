@@ -79,7 +79,7 @@ services:
         image: 'magento/magento-cloud-docker-nginx:1.19-1.2.1'
         extends: generic
         volumes:
-            -   './.docker/log/:/var/log/nginx/:delegated'
+            - './.docker/log/:/var/log/nginx/:delegated'
         networks:
             magento:
                 aliases:
@@ -138,7 +138,7 @@ services:
             - './vendor:/app/vendor:rw,delegated'
             - './generated:/app/generated:rw,delegated'
             - '~/.composer/cache:/root/.composer/cache:rw,delegated'
-            - './.composer:/app/.composer:rw,delegated'
+            - './.composer/auth.json:/root/.composer/auth.json:rw,delegated'
         networks:
             magento:
                 aliases:
